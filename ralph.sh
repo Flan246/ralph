@@ -1,6 +1,6 @@
 #!/bin/bash
 # Ralph Wiggum - Long-running AI agent loop
-# Usage: ./ralph.sh [--tool amp|claude] [max_iterations]
+# Usage: ./ralph.sh [--tool amp|claude|kimi] [max_iterations]
 
 set -e
 
@@ -29,11 +29,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate tool choice
-if [[ "$TOOL" != "amp" && "$TOOL" != "claude" ]]; then
-  echo "Error: Invalid tool '$TOOL'. Must be 'amp' or 'claude'."
+if [[ "$TOOL" != "amp" && "$TOOL" != "claude" && "$TOOL" != "kimi" ]]; then
+  echo "Error: Invalid tool '$TOOL'. Must be 'amp', 'claude' or 'kimi'."
   exit 1
 fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# jq fallback: use the jq bundled with the Ralph tool home if not on PATH
+if ! command -v jq >/dev/null 2>&1; then
+  export PATH="/d/cursor_file/ralph/bin:$PATH"
+fi
 PRD_FILE="$SCRIPT_DIR/prd.json"
 PROGRESS_FILE="$SCRIPT_DIR/progress.txt"
 ARCHIVE_DIR="$SCRIPT_DIR/archive"
@@ -90,6 +95,9 @@ for i in $(seq 1 $MAX_ITERATIONS); do
   # Run the selected tool with the ralph prompt
   if [[ "$TOOL" == "amp" ]]; then
     OUTPUT=$(cat "$SCRIPT_DIR/prompt.md" | amp --dangerously-allow-all 2>&1 | tee /dev/stderr) || true
+  elif [[ "$TOOL" == "kimi" ]]; then
+    # Kimi Code: -p runs non-interactively with auto permission; assistant text goes to stdout
+    OUTPUT=$(kimi -p "$(cat "$SCRIPT_DIR/KIMI.md")" 2>&1 | tee "$SCRIPT_DIR/last-run.log") || true
   else
     # Claude Code: use --dangerously-skip-permissions for autonomous operation, --print for output
     OUTPUT=$(claude --dangerously-skip-permissions --print < "$SCRIPT_DIR/CLAUDE.md" 2>&1 | tee /dev/stderr) || true

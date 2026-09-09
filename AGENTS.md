@@ -22,9 +22,12 @@ cd flowchart && npm run build
 
 ## Key Files
 
-- `ralph.sh` - The bash loop that spawns fresh AI instances (supports `--tool amp` or `--tool claude`)
+- `ralph.sh` - The bash loop that spawns fresh AI instances (supports `--tool amp`, `--tool claude` or `--tool kimi`)
 - `prompt.md` - Instructions given to each AMP instance
 -  `CLAUDE.md` - Instructions given to each Claude Code instance
+- `KIMI.md` - Instructions given to each Kimi Code instance (`kimi -p`, auto permission)
+- `bin/jq.exe` - Bundled jq for Windows hosts without jq on PATH (ralph.sh falls back to it)
+- `kimi-skills/ralph-loop/SKILL.md` - Kimi Code skill for auto-deciding when to use Ralph; registered via `extra_skill_dirs` in `~/.kimi-code/config.toml` (single source of truth — the copy formerly at `~/.agents/skills/ralph-loop` was removed)
 - `prd.json.example` - Example PRD format
 - `flowchart/` - Interactive React Flow diagram explaining how Ralph works
 
